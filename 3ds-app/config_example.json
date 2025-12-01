@@ -1,0 +1,8 @@
+{
+  "nas_url": "https://nas.example.com",
+  "nas_port": 443,
+  "protocol": "https",
+  "base_path": "/saves/3ds/",
+  "username": "user",
+  "password": "password"
+}
