@@ -20,10 +20,6 @@ int main(int argc, char **argv) {
     }
 
     while (aptMainLoop()) {
-        hidScanInput();
-        u32 kDown = hidKeysDown();
-        if (kDown & KEY_START) break;
-
         int choice = ui_main_menu(&cfg);
 
         if (choice == 0) {

@@ -1,6 +1,12 @@
 #include "ui.h"
 #include <3ds.h>
 #include <stdio.h>
+#include <stddef.h>
+
+typedef struct {
+    const char *label;
+    int value;
+} MenuOption;
 
 static void print_config(const AppConfig *cfg) {
     printf("=== Configuration NAS ===\n");
@@ -22,20 +28,56 @@ void ui_exit(void) {
 }
 
 int ui_main_menu(const AppConfig *cfg) {
-    consoleClear();
-    print_config(cfg);
-    printf("=== 3DS Save Sync ===\n\n");
-    printf("1) Scan & Upload saves\n");
-    printf("2) Download & Restore saves\n");
-    printf("3) Test connexion\n");
-    printf("4) Edit config (TODO)\n");
-    printf("0) Quitter\n\n");
-    printf("Choix: ");
+    static const MenuOption options[] = {
+        {"Scan & Upload saves", 1},
+        {"Download & Restore saves", 2},
+        {"Test connexion", 3},
+        {"Edit config (TODO)", 4},
+        {"Quitter", 0},
+    };
+    const size_t count = sizeof(options) / sizeof(options[0]);
+    size_t selected = 0;
+    bool redraw = true;
+    const u32 up_mask = KEY_DUP | KEY_UP;
+    const u32 down_mask = KEY_DDOWN | KEY_DOWN;
 
-    int choice = -1;
-    scanf("%d", &choice);
+    while (aptMainLoop()) {
+        hidScanInput();
+        u32 kDown = hidKeysDown();
 
-    return choice;
+        if (kDown & up_mask) {
+            selected = (selected == 0) ? count - 1 : selected - 1;
+            redraw = true;
+        } else if (kDown & down_mask) {
+            selected = (selected + 1) % count;
+            redraw = true;
+        }
+
+        if (kDown & KEY_A) {
+            return options[selected].value;
+        }
+
+        if (kDown & (KEY_B | KEY_START)) {
+            return 0;
+        }
+
+        if (redraw) {
+            consoleClear();
+            print_config(cfg);
+            printf("=== 3DS Save Sync ===\n\n");
+            for (size_t i = 0; i < count; ++i) {
+                printf("%c %s\n", (i == selected) ? '>' : ' ', options[i].label);
+            }
+            printf("\nUtilise D-Pad pour naviguer, A pour valider, B/START pour quitter.\n");
+            redraw = false;
+            gfxFlushBuffers();
+            gfxSwapBuffers();
+        }
+
+        gspWaitForVBlank();
+    }
+
+    return 0;
 }
 
 void ui_show_message(const char *msg) {
