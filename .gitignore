@@ -1,0 +1,16 @@
+# Build artifacts
+3ds-app/build/
+3ds-app/output/
+
+# Homebrew binaries
+3ds-app/*.3dsx
+3ds-app/*.cia
+3ds-app/*.elf
+3ds-app/*.smdh
+
+# Python cache
+server/__pycache__/
+
+# Server storage files (keep directory via .gitkeep)
+server/storage/*
+!server/storage/.gitkeep
