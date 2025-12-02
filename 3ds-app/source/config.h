@@ -5,12 +5,9 @@
 #define CONFIG_PATH "sdmc:/3ds-save-sync/config.json"
 
 typedef struct {
-    char nas_url[256];
-    int  nas_port;
-    char protocol[8];
-    char base_path[256];
-    char username[64];
-    char password[64];
+    char api_url[256];     // ex: "https://theo-avril.fr/api/3ds"
+    char api_key[128];     // header x-api-key
+    char console_id[64];   // ex: "3ds-theo-001"
 } AppConfig;
 
 bool config_load(AppConfig *cfg, const char *path);

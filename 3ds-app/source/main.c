@@ -8,6 +8,34 @@
 #include "net.h"
 
 int main(int argc, char **argv) {
+    (void)argc;
+    (void)argv;
+
+    // Initialisation du module HTTP (httpc)
+    Result res = httpcInit(0);
+    if (R_FAILED(res)) {
+        // Si l'init HTTP échoue, on affiche un message simple en console
+        gfxInitDefault();
+        consoleInit(GFX_TOP, NULL);
+
+        printf("httpcInit failed: 0x%08lX\n", res);
+        printf("Impossible d'utiliser les fonctions reseau.\n");
+        printf("Appuie sur START pour quitter.\n");
+
+        while (aptMainLoop()) {
+            hidScanInput();
+            u32 kDown = hidKeysDown();
+            if (kDown & KEY_START) break;
+
+            gfxFlushBuffers();
+            gfxSwapBuffers();
+            gspWaitForVBlank();
+        }
+
+        gfxExit();
+        return 1;
+    }
+
     AppConfig cfg;
     bool loaded = config_load(&cfg, CONFIG_PATH);
 
@@ -20,6 +48,10 @@ int main(int argc, char **argv) {
     }
 
     while (aptMainLoop()) {
+        hidScanInput();
+        u32 kDown = hidKeysDown();
+        if (kDown & KEY_START) break;
+
         int choice = ui_main_menu(&cfg);
 
         if (choice == 0) {
@@ -46,5 +78,7 @@ int main(int argc, char **argv) {
     }
 
     ui_exit();
+    httpcExit();  // Libère proprement le module HTTP
+
     return 0;
 }

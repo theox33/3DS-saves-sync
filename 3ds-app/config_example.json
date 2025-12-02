@@ -1,8 +1,5 @@
 {
-  "nas_url": "https://nas.example.com",
-  "nas_port": 443,
-  "protocol": "https",
-  "base_path": "/saves/3ds/",
-  "username": "user",
-  "password": "password"
+  "api_url": "https://theo-avril.fr/api/3ds",
+  "api_key": "super-secret-key",
+  "console_id": "3ds-theo-001"
 }

@@ -1,8 +1,15 @@
 #include "sync.h"
 #include "saves.h"
 #include "net.h"
-#include "util.h"
 #include <stdio.h>
+#include <string.h>
+
+static void derive_game_id(const SaveEntry *entry, char *out, size_t out_size) {
+    // Pour un premier jet : on utilise le nom du dossier/fichier comme gameId
+    // ex: "pokemon-black" si entry->name = "pokemon-black"
+    strncpy(out, entry->name, out_size - 1);
+    out[out_size - 1] = '\0';
+}
 
 SyncResult sync_upload_all(const AppConfig *cfg) {
     SaveEntry entries[MAX_SAVES];
@@ -13,25 +20,31 @@ SyncResult sync_upload_all(const AppConfig *cfg) {
         return SYNC_OK;
     }
 
+    printf("[SYNC] %zu sauvegardes trouvées. Début upload...\n", count);
+
     for (size_t i = 0; i < count; ++i) {
-        char archive_path[512];
-        char archive_name[256];
+        char gameId[128];
+        derive_game_id(&entries[i], gameId, sizeof(gameId));
 
-        util_join_path("sdmc:/3ds-save-sync/tmp", entries[i].name, archive_path, sizeof(archive_path));
-        snprintf(archive_name, sizeof(archive_name), "%s.zip", entries[i].name);
+        const char *slot = "slot1"; // pour l'instant on fixe slot1
 
-        printf("[SYNC] TODO: compresser %s -> %s\n", entries[i].path, archive_path);
+        printf("[SYNC] Upload %s (gameId=%s, slot=%s)\n",
+               entries[i].path, gameId, slot);
 
-        if (!net_upload_archive(cfg, archive_path, archive_name)) {
-            printf("[SYNC] Echec upload %s\n", entries[i].name);
+        if (!net_upload_save(cfg, entries[i].path, gameId, slot)) {
+            printf("[SYNC] Echec upload pour %s\n", entries[i].path);
             return SYNC_ERR_NET;
         }
     }
 
+    printf("[SYNC] Upload terminé pour %zu sauvegardes.\n", count);
     return SYNC_OK;
 }
 
 SyncResult sync_download_all(const AppConfig *cfg) {
-    printf("[SYNC] TODO: implémenter la liste des saves distantes + restauration.\n");
+    // Pour l'instant, on ne gère pas encore l'interaction :
+    // - dans une V1 : tu pourras demander gameId à l'utilisateur,
+    //   appeler net_list_saves, parser le JSON, etc.
+    printf("[SYNC] TODO: implémenter le flux de download interactif.\n");
     return SYNC_OK;
 }
